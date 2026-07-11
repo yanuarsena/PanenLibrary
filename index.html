@@ -146,11 +146,10 @@
     // ========================================================
     
     // GANTI TULISAN DI BAWAH INI DENGAN LINK WEB APP /EXEC SPREADSHEET SANGAT UTUH!
-    // Contoh: "https://script.google.com/macros/s/AKfycb.../exec"
     const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwd7Iv6QWJusb-dU0js3CuQCAPwo_mh_DqRmHN8o41f7KNUaCyxuMNVY0EnTK9LU6Ky/exec";
 
     function openDirectly() {
-      if (GAS_WEB_APP_URL && GAS_WEB_APP_URL !== "https://script.google.com/macros/s/AKfycbwd7Iv6QWJusb-dUOjs3CuQCAPwo_mh_DqRmHN8o41f7KNUaCyxuMNVY0EnTK9LU6Ky/exec") {
+      if (GAS_WEB_APP_URL && GAS_WEB_APP_URL !== "https://script.google.com/macros/s/AKfycbx0_9MxvEHRL6X1QOmBH8No26T6lyXfD5Pqwo068V1ROqfmg38p-CSu8Mx4WCHLGHoc/exec") {
         window.open(GAS_WEB_APP_URL, '_blank');
       }
     }
@@ -169,16 +168,16 @@
         }, 500);
       });
 
-      // 2. Aktifkan Helper Timeout jika dalam 6 detik iframe gagal memuat karena terblokir Google login
+      // 2. Aktifkan Helper Timeout jika dalam 5 detik iframe gagal memuat karena terblokir Google login
       setTimeout(() => {
         if (loadingScreen.style.display !== 'none') {
           timeoutHelper.classList.remove('hidden', 'opacity-0', 'scale-95');
           timeoutHelper.classList.add('opacity-100', 'scale-100');
         }
-      }, 6000);
+      }, 5000);
 
       // 3. Tembakkan URL Apps Script ke dalam iframe shell
-      if (GAS_WEB_APP_URL && GAS_WEB_APP_URL !== "TEMPEL_URL_WEB_APP_APPS_SCRIPT_LO_DISINI") {
+      if (GAS_WEB_APP_URL && GAS_WEB_APP_URL !== "https://script.google.com/macros/s/AKfycbx0_9MxvEHRL6X1QOmBH8No26T6lyXfD5Pqwo068V1ROqfmg38p-CSu8Mx4WCHLGHoc/exec") {
         iframe.src = GAS_WEB_APP_URL;
       } else {
         alert("Peringatan: Kamu belum memasukkan URL Google Apps Script di file pwa_wrapper.html!");
