@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  
+  <!-- Apple PWA Standalone Support -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="PANEN">
+  
+  <!-- Theme Color for Browser Header -->
+  <meta name="theme-color" content="#0A4D2E">
+  
+  <title>PANEN Mobile - Koperasi Digital</title>
+  
+  <!-- Link manifest PWA -->
+  <link rel="manifest" href="manifest.json">
+  
+  <!-- Ikon untuk iOS -->
+  <link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/1ekHgK-EX0uCEq4YUUwKXcmy4O-VH3d7R">
+  <link rel="shortcut icon" href="https://lh3.googleusercontent.com/d/1ekHgK-EX0uCEq4YUUwKXcmy4O-VH3d7R" type="image/x-icon">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Sans Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    html, body {
+      background-color: #0A4D2E !important; /* Hijau botol solid untuk seamless status bar */
+      margin: 0 !important;
+      padding: 0 !important;
+      height: 100% !important;
+      width: 100% !important;
+      overflow: hidden !important;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    /* PWA Iframe Shell - Melar penuh 100% menutupi seluruh screen fisik HP */
+    .pwa-iframe-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100% !important;
+      height: 100% !important;
+      border: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      z-index: 10;
+      -webkit-overflow-scrolling: touch;
+      overflow-y: auto;
+    }
+
+    /* Layar fallback cerdas saat koneksi internet terputus (Offline Screen) */
+    #offlineFallbackScreen {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, #042F1A 0%, #0A4D2E 100%);
+      z-index: 100;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+      color: #ffffff;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- OFFLINE FALLBACK SCREEN (Akan otomatis muncul jika koneksi HP Anggota mati) -->
+  <div id="offlineFallbackScreen">
+    <div class="space-y-6 max-w-xs mx-auto">
+      <div class="w-24 h-24 bg-white/10 rounded-full flex items-center justify-center mx-auto border border-white/20 animate-pulse">
+        <i class="fa-solid fa-wifi-slash text-4xl text-amber-400"></i>
+      </div>
+      
+      <div class="space-y-2">
+        <h1 class="text-xl font-extrabold tracking-tight">Koneksi Terputus</h1>
+        <p class="text-xs text-emerald-200 leading-relaxed font-semibold">
+          PANEN Mobile memerlukan koneksi internet aktif untuk menarik data keuangan Anda secara real-time dari server Google.
+        </p>
+      </div>
+
+      <button onclick="window.location.reload();" class="w-full py-3.5 bg-gradient-to-r from-[#F59E0B] to-[#D97706] text-[#042F1A] font-black text-xs uppercase tracking-wider rounded-full active:scale-95 transition duration-150 focus:outline-none shadow-lg shadow-yellow-950/40">
+        <i class="fa-solid fa-rotate-right mr-1.5"></i> Coba Hubungkan Kembali
+      </button>
+    </div>
+  </div>
+
+  <!-- SEAMLESS NATIVE APPS SCRIPT IFRAME -->
+  <iframe id="pwaIframe" src="" class="pwa-iframe-container" allow="geolocation; microphone; camera"></iframe>
+
+  <script>
+    // ========================================================
+    // SINKRONISASI LINK BACKEND APPS SCRIPT (ZETTBOS CONFIG)
+    // ========================================================
+    
+    // GANTI TULISAN DI BAWAH INI DENGAN LINK WEB APP /EXEC SPREADSHEET SANGAT UTUH!
+    const GAS_WEB_APP_URL = https://script.google.com/macros/s/AKfycbwd7Iv6QWJusb-dUOjs3CuQCAPwo_mh_DqRmHN8o41f7KNUaCyxuMNVY0EnTK9LU6Ky/exec;
+
+    window.addEventListener('load', () => {
+      const iframe = document.getElementById('pwaIframe');
+      const offlineScreen = document.getElementById('offlineFallbackScreen');
+
+      // 1. Tembakkan URL Apps Script ke dalam iframe shell
+      if (GAS_WEB_APP_URL && GAS_WEB_APP_URL !== https://script.google.com/macros/s/AKfycbwd7Iv6QWJusb-dUOjs3CuQCAPwo_mh_DqRmHN8o41f7KNUaCyxuMNVY0EnTK9LU6Ky/exec) {
+        iframe.src = GAS_WEB_APP_URL;
+      } else {
+        alert("Peringatan: Kamu belum memasukkan URL Google Apps Script di file index.html PWA lo!");
+      }
+
+      // 2. Monitoring Status Koneksi HP Anggota secara Real-Time
+      function updateConnectionStatus() {
+        if (navigator.onLine) {
+          offlineScreen.style.display = 'none';
+          iframe.style.display = 'block';
+        } else {
+          offlineScreen.style.display = 'flex';
+          iframe.style.display = 'none';
+        }
+      }
+
+      window.addEventListener('online', updateConnectionStatus);
+      window.addEventListener('offline', updateConnectionStatus);
+      updateConnectionStatus(); // Inisialisasi awal saat PWA pertama dibuka
+    });
+
+    // ========================================================
+    // REGISTRASI SERVICE WORKER PWA SECARA RESMI (NATIVE)
+    // ========================================================
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(reg => console.log('Senama PWA Service Worker Registered! Scope: ', reg.scope))
+          .catch(err => console.log('PWA Service Worker Registration Failed: ', err));
+      });
+    }
+  </script>
+</body>
+</html>
