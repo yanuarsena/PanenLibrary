@@ -24,7 +24,7 @@
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Google Sans Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;600;700;800&display=swap" rel="stylesheet">
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -68,9 +68,54 @@
       text-align: center;
       color: #ffffff;
     }
+
+    /* Layar Loading Indikator Premium */
+    #loadingScreen {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, #042F1A 0%, #0A4D2E 100%);
+      z-index: 99;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+      color: #ffffff;
+      transition: opacity 0.5s ease;
+    }
   </style>
 </head>
 <body>
+
+  <!-- ================= LAYAR LOADING PREMIUM (SINKRONISASI INDIKATOR) ================= -->
+  <div id="loadingScreen">
+    <div class="space-y-6 max-w-xs mx-auto flex flex-col items-center">
+      <!-- Logo Badge Koperasi PANEN -->
+      <div class="w-24 h-24 flex items-center justify-center relative">
+        <div class="absolute inset-0 rounded-full bg-yellow-500/10 filter blur-xl animate-pulse"></div>
+        <img src="https://lh3.googleusercontent.com/d/1ekHgK-EX0uCEq4YUUwKXcmy4O-VH3d7R" referrerpolicy="no-referrer" alt="PANEN Logo" class="w-20 h-20 relative z-10 object-contain bg-transparent">
+      </div>
+      
+      <div class="space-y-1">
+        <h2 class="text-xs font-black text-[#EAB308] tracking-widest uppercase">PANEN MOBILE</h2>
+        <p class="text-[9px] text-emerald-300 font-extrabold tracking-widest uppercase">Menghubungkan ke Server...</p>
+      </div>
+
+      <!-- Luxury Spinning Gold Loader -->
+      <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-yellow-500"></div>
+
+      <!-- SMART TIMEOUT HELPER: Muncul otomatis jika Google memblokir Iframe karena butuh login Google -->
+      <div id="timeoutHelper" class="hidden opacity-0 scale-95 transition-all duration-500 mt-6 px-4 py-3.5 bg-white/10 rounded-2xl border border-white/20 max-w-xs text-center">
+        <p class="text-[10px] text-emerald-200 leading-relaxed font-semibold mb-3">
+          Jika layar tetap hijau, browser Anda mungkin memblokir otorisasi login Google di dalam aplikasi.
+        </p>
+        <button onclick="openDirectly()" class="w-full py-2 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-slate-950 rounded-xl font-extrabold text-[10px] tracking-wide uppercase transition active:scale-95 shadow-md">
+          <i class="fa-solid fa-arrow-up-right-from-square mr-1"></i> Buka Aplikasi Langsung
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- OFFLINE FALLBACK SCREEN (Akan otomatis muncul jika koneksi HP Anggota mati) -->
   <div id="offlineFallbackScreen">
@@ -101,24 +146,51 @@
     // ========================================================
     
     // GANTI TULISAN DI BAWAH INI DENGAN LINK WEB APP /EXEC SPREADSHEET SANGAT UTUH!
-    const GAS_WEB_APP_URL = https://script.google.com/macros/s/AKfycbwd7Iv6QWJusb-dUOjs3CuQCAPwo_mh_DqRmHN8o41f7KNUaCyxuMNVY0EnTK9LU6Ky/exec;
+    // Contoh: "https://script.google.com/macros/s/AKfycb.../exec"
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwd7Iv6QWJusb-dU0js3CuQCAPwo_mh_DqRmHN8o41f7KNUaCyxuMNVY0EnTK9LU6Ky/exec";
+
+    function openDirectly() {
+      if (GAS_WEB_APP_URL && GAS_WEB_APP_URL !== "https://script.google.com/macros/s/AKfycbwd7Iv6QWJusb-dUOjs3CuQCAPwo_mh_DqRmHN8o41f7KNUaCyxuMNVY0EnTK9LU6Ky/exec") {
+        window.open(GAS_WEB_APP_URL, '_blank');
+      }
+    }
 
     window.addEventListener('load', () => {
       const iframe = document.getElementById('pwaIframe');
       const offlineScreen = document.getElementById('offlineFallbackScreen');
+      const loadingScreen = document.getElementById('loadingScreen');
+      const timeoutHelper = document.getElementById('timeoutHelper');
 
-      // 1. Tembakkan URL Apps Script ke dalam iframe shell
-      if (GAS_WEB_APP_URL && GAS_WEB_APP_URL !== https://script.google.com/macros/s/AKfycbwd7Iv6QWJusb-dUOjs3CuQCAPwo_mh_DqRmHN8o41f7KNUaCyxuMNVY0EnTK9LU6Ky/exec) {
+      // 1. Hilangkan layar loading saat iframe sukses memuat konten Apps Script
+      iframe.addEventListener('load', () => {
+        loadingScreen.style.opacity = '0';
+        setTimeout(() => {
+          loadingScreen.style.display = 'none';
+        }, 500);
+      });
+
+      // 2. Aktifkan Helper Timeout jika dalam 6 detik iframe gagal memuat karena terblokir Google login
+      setTimeout(() => {
+        if (loadingScreen.style.display !== 'none') {
+          timeoutHelper.classList.remove('hidden', 'opacity-0', 'scale-95');
+          timeoutHelper.classList.add('opacity-100', 'scale-100');
+        }
+      }, 6000);
+
+      // 3. Tembakkan URL Apps Script ke dalam iframe shell
+      if (GAS_WEB_APP_URL && GAS_WEB_APP_URL !== "TEMPEL_URL_WEB_APP_APPS_SCRIPT_LO_DISINI") {
         iframe.src = GAS_WEB_APP_URL;
       } else {
-        alert("Peringatan: Kamu belum memasukkan URL Google Apps Script di file index.html PWA lo!");
+        alert("Peringatan: Kamu belum memasukkan URL Google Apps Script di file pwa_wrapper.html!");
       }
 
-      // 2. Monitoring Status Koneksi HP Anggota secara Real-Time
+      // 4. Monitoring Status Koneksi HP Anggota secara Real-Time
       function updateConnectionStatus() {
         if (navigator.onLine) {
           offlineScreen.style.display = 'none';
-          iframe.style.display = 'block';
+          if (loadingScreen.style.display === 'none') {
+            iframe.style.display = 'block';
+          }
         } else {
           offlineScreen.style.display = 'flex';
           iframe.style.display = 'none';
@@ -136,7 +208,7 @@
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js')
-          .then(reg => console.log('Senama PWA Service Worker Registered! Scope: ', reg.scope))
+          .then(reg => console.log('Zettbos PWA Service Worker Registered! Scope: ', reg.scope))
           .catch(err => console.log('PWA Service Worker Registration Failed: ', err));
       });
     }
